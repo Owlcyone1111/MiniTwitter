@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.event.*;
+
 
 /**
  *
@@ -20,6 +22,8 @@ public class AdminPanel {
     private JPanel panel1;
     private JPanel panel2;
     private JTree tree;
+    private TreePath tp;
+    private DefaultMutableTreeNode current;
     private JTextField userId;
     private JTextField groupId;
     private JButton addUser;
@@ -31,6 +35,7 @@ public class AdminPanel {
     private JButton showPositives;
     
     private AdminPanel() {
+        System.out.println("test");
         frm = new JFrame("Mini Twitter");
         frm.setLayout(new FlowLayout());
         frm.setSize(420, 420);
@@ -40,7 +45,6 @@ public class AdminPanel {
         panel2 = new JPanel();
         panel1.setLayout(new GridLayout(2, 2));
         panel2.setLayout(new GridLayout(2, 2));
-        tree = new JTree();
         userId = new JTextField("User ID", 10);
         groupId = new JTextField("Group ID", 10);
         addUser = new JButton("Add User");
@@ -50,6 +54,12 @@ public class AdminPanel {
         showGroups = new JButton("Show Group Total");
         showMessages = new JButton("Show Messages Total");
         showPositives = new JButton("Show Positive Percentage");
+        
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
+        tree = new JTree(root);
+        tree.setEditable(true);
+        TreeSelectionModel tsm = tree.getSelectionModel();
+        tsm.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         
         frm.add(tree);
         panel1.add(userId);
@@ -62,19 +72,29 @@ public class AdminPanel {
         panel2.add(showGroups);
         panel2.add(showMessages);
         panel2.add(showPositives);
-        frm.add(panel2);
+        frm.add(panel2);        
         
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
-        
-        addUser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                
+        tree.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent tse) {
+//                tp = tse.getPath(); // Get the path to the selection.
+//                System.out.println(tp.getLastPathComponent()); // Display the selected node.
+                current = (DefaultMutableTreeNode)tree.getSelectionPath().getLastPathComponent();
             }
         });
         
+        addUser.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                if (tp != null) {
+                    current.add(new DefaultMutableTreeNode(userId.getText()));
+                }
+            }
+        });
+        
+        
         addGroup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                
+                root.add(new DefaultMutableTreeNode(groupId.getText()));
+                System.out.println("reached!");
             }
         });
         

@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Samowl
  */
-public class Subject {
+public abstract class Subject {
     private List<Observer> observers = new ArrayList<Observer>();
     
     public void attach(Observer observer) {
