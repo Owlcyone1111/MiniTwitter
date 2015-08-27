@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
+import java.util.ArrayList;
 import javax.swing.event.*;
 
 
@@ -18,12 +20,17 @@ import javax.swing.event.*;
  */
 public class AdminPanel {
     private static AdminPanel instance;
+    private List<User> users = new ArrayList<User>();
+    private List<Group> groups = new ArrayList<Group>();
     private JFrame frm;
     private JPanel panel1;
     private JPanel panel2;
     private JTree tree;
     private TreePath tp;
+    private DefaultTreeModel model;
+    private DefaultMutableTreeNode root; 
     private DefaultMutableTreeNode current;
+    private User selectedUser;
     private JTextField userId;
     private JTextField groupId;
     private JButton addUser;
@@ -35,7 +42,6 @@ public class AdminPanel {
     private JButton showPositives;
     
     private AdminPanel() {
-        System.out.println("test");
         frm = new JFrame("Mini Twitter");
         frm.setLayout(new FlowLayout());
         frm.setSize(420, 420);
@@ -55,8 +61,21 @@ public class AdminPanel {
         showMessages = new JButton("Show Messages Total");
         showPositives = new JButton("Show Positive Percentage");
         
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
-        tree = new JTree(root);
+        // Initialize model
+        for (Group g : groups) {
+            // Add every group to root node
+            DefaultMutableTreeNode currentGroup = new DefaultMutableTreeNode(g);
+            root.add(currentGroup);
+            
+            // Add every user to group
+            for (User u : g.getUsers()) {
+                currentGroup.add(new DefaultMutableTreeNode(u));
+            }
+        }
+        
+        root = new DefaultMutableTreeNode("Root");
+        model = new DefaultTreeModel(root);
+        tree = new JTree(model);
         tree.setEditable(true);
         TreeSelectionModel tsm = tree.getSelectionModel();
         tsm.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -84,8 +103,10 @@ public class AdminPanel {
         
         addUser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                if (tp != null) {
-                    current.add(new DefaultMutableTreeNode(userId.getText()));
+                if (current != null) {
+                    current.add(new DefaultMutableTreeNode(new User(userId.getText())));
+                    tree.updateUI();
+                    tree.expandPath(tree.getSelectionPath());
                 }
             }
         });
@@ -93,8 +114,11 @@ public class AdminPanel {
         
         addGroup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                root.add(new DefaultMutableTreeNode(groupId.getText()));
-                System.out.println("reached!");
+                if (current != null) {
+                    current.add(new DefaultMutableTreeNode(new Group(groupId.getText())));
+                    tree.updateUI();
+                    tree.expandPath(tree.getSelectionPath());
+                }
             }
         });
         
@@ -102,7 +126,7 @@ public class AdminPanel {
             public void actionPerformed(ActionEvent ae) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        new UserPanel();
+                        new UserPanel(selectedUser);
                     }
                 });
             }
